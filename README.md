@@ -1,3 +1,11 @@
-#  General
+# LFA Laboratory works
 
-This repo is purely dedicated for conditions and time limits of laboratory works. Updates will be here once I will be sure about them.
+Laboratory works for the Formal Languages & Finite Automata course at TUM.
+
+**Student:** Alexei Pavlovschii, FAF-231
+
+**Languages used:** Python
+
+## Table of Contents
+
+- [Laboratory 1](1_RegularGrammars/L1Report.md)
