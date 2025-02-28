@@ -38,7 +38,6 @@ The process of converting a grammar into a finite automaton involves translating
 
 ## Implementation description
 
-### Variant 25
 ### Grammar Class Implementation
 
 The `Grammar` class serves as the foundation for defining formal grammars with non-terminals, terminals, production rules, and a start symbol. Key functionalities include string generation and grammar type identification.
@@ -147,6 +146,7 @@ def accepts(self, input_string):
 Furthermore, the `FiniteAutomaton` class includes a method for visualizing the automaton's structure using Graphviz, a popular graph visualization tool. The `to_graphviz` method generates a visual representation of the automaton's states, transitions, and accept states, which can be exported to various image formats for further analysis and easier understanding of the automaton's behavior.
 
 ## Conclusions / Screenshots / Results
+### Variant 25
 
 This laboratory exercise successfully demonstrated the implementation and functionality of a finite automaton generated from a regular grammar. The `Grammar` class was able to generate strings that conform to the specified rules, while the FiniteAutomaton class evaluated these strings to determine if they were accepted by the automaton. The process of converting a regular grammar into a finite automaton was also implemented, verifying the theoretical concept that regular grammars are equivalent to finite automata. The practical tests conducted with various strings further solidified the understanding of how finite automata process input to determine language acceptance.
 
@@ -158,7 +158,7 @@ _Figure 1. Generated finite automaton structure_
 
 The diagram Figure 2 is provides a graphical representation of the finite automaton. Visualizing the automaton is a critical step in understanding its structure and verifying its correctness.
 
-![Finite Automaton Diagram](./images/diagram.png)
+![Finite Automaton Diagram](./images/finite_automaton.png)
 
 _Figure 2. Diagram of the finite automaton structure_
 

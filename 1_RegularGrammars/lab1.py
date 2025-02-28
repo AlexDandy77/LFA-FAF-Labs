@@ -28,10 +28,10 @@ class FiniteAutomaton:
         return curr_state in self.accept_states
 
     # For testing purposes
-    def create_diagram(self):
+    def create_diagram(self, filename="images/finite_automaton", dpi=300):
         dot = Digraph(comment='Finite Automaton')
         dot.attr(rankdir='LR')
-
+        dot.attr(dpi=str(dpi))
         # Add states
         for state in self.states:
             if state in self.accept_states:
@@ -49,7 +49,8 @@ class FiniteAutomaton:
                 dot.edge(state, next_state, label=symbol)
 
         source = Source(dot.source)
-        return source
+        output_path = source.render(filename, format="png", engine="dot", cleanup=True)
+        return output_path
 
 
 class Grammar:
