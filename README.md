@@ -10,3 +10,4 @@ Laboratory works for the Formal Languages & Finite Automata course at TUM.
 
 - [Laboratory 1](1_RegularGrammars/L1Report.md)
 - [Laboratory 2](2_FiniteAutomata/L2Report.md)
+- [Laboratory 3](3_LexerScanner/L3Report.md)
