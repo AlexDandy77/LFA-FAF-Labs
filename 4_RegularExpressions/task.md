@@ -23,7 +23,7 @@ Write a good report covering all performed actions and faced difficulties.
 
 ## Variant 1:
 
-![Variant 1](/4_Regular_expressions/variant_1_task.png)
+![Variant 1](/4_RegularExpressions/variant_1_task.png)
 
 Examples of what you must generate:
 
@@ -33,7 +33,7 @@ Examples of what you must generate:
 
 ## Variant 2:
 
-![Variant 2](/4_Regular_expressions/variant_2_task.png)
+![Variant 2](/4_RegularExpressions/variant_2_task.png)
 
 Examples of what you must generate:
 
@@ -43,7 +43,7 @@ Examples of what you must generate:
 
 ## Variant 3:
 
-![Variant 3](/4_Regular_expressions/variant_3_task.png)
+![Variant 3](/4_RegularExpressions/variant_3_task.png)
 
 Examples of what must be generated:
 
@@ -53,7 +53,7 @@ Examples of what must be generated:
 
 ## Variant 4:
 
-![Variant 4](/4_Regular_expressions/variant_4_task.png)
+![Variant 4](/4_RegularExpressions/variant_4_task.png)
 
 Examples of what must be generated:
 
