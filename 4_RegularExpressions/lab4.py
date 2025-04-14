@@ -1,116 +1,252 @@
-def generate_valid_strings():
+def parse_expression(s, pos=0, stop_chars=set(')')):
     """
-    Main function, generates all valid strings for Variant 4 REGEXs:
-    1) (S|T)(U|V)W*Y+24
-    2) L(M|N)O^3P*Q(2|3)
-    3) R*S(T|U|V)W(X|Y|Z)^2
-    repetition of '*' parts limited to 5 occurrences
+    Parses an expression which may contain concatenation and alternation (using '|').
+    Returns a parse tree and the new position.
     """
+    alternatives = []
+    sequence = []
+    while pos < len(s) and s[pos] not in stop_chars:
+        if s[pos] == '|':
+            # End the current alternative and start a new one.
+            alternatives.append(sequence_to_node(sequence))
+            sequence = []
+            pos += 1  # Skip the '|' character.
+        else:
+            node, pos = parse_atom(s, pos)
+            sequence.append(node)
+    # Append the final alternative.
+    alternatives.append(sequence_to_node(sequence))
+    if len(alternatives) == 1:
+        return alternatives[0], pos
+    else:
+        return {"type": "alternation", "options": alternatives}, pos
 
-    # 1. (S|T)(U|V)W*Y+24
-    first_part = []
-    for first_letter in ['S', 'T']:
-        for second_letter in ['U', 'V']:
-            for w_count in range(6):
-                for y_count in range(1, 6):
-                    w_part = 'W' * w_count
-                    y_part = 'Y' * y_count
-                    combo = f"{first_letter}{second_letter}{w_part}{y_part}24"
-                    first_part.append(combo)
 
-    # 2) L(M|N)O^3P*Q(2|3)
-    second_part = []
-    for letter in ['M', 'N']:
-        for p_count in range(3):
-            p_part = 'P' * p_count
-            for digit in ['2', '3']:
-                combo = f"L{letter}000{p_part}Q{digit}"
-                second_part.append(combo)
-
-    # 3) R*S(T|U|V)W(X|Y|Z)^2
-    third_part = []
-    xyz_pairs = []
-    for c1 in ['X', 'Y', 'Z']:
-        for c2 in ['X', 'Y', 'Z']:
-            xyz_pairs.append(c1 + c2)
-
-    for r_count in range(6):
-        r_part = 'R' * r_count
-
-        for middle_letter in ['T', 'U', 'V']:
-            for pair in xyz_pairs:
-                combo = f"{r_part}S{middle_letter}W{pair}"
-                third_part.append(combo)
-
-    return first_part, second_part, third_part
-
-def sequence_processing(string):
+def sequence_to_node(seq):
     """
-    Bonus point function. Shows how a given string is parsed according to:
-    (S|T)(U|V)W*Y+24
+    Combines a list of nodes into a sequence node.
+    If only one node is present, returns it directly.
+    """
+    if not seq:
+        return {"type": "literal", "value": ""}
+    if len(seq) == 1:
+        return seq[0]
+    return {"type": "sequence", "elements": seq}
+
+
+def parse_atom(s, pos):
+    """
+    Parses a single atom which is either a group (in parentheses) or a literal.
+    After reading the atom, it checks for an attached quantifier (*, +, or ^number).
+    Returns the constructed node and the new position.
+    """
+    if s[pos] == '(':
+        # Parse a grouped subexpression.
+        pos += 1  # Skip '('
+        node, pos = parse_expression(s, pos, stop_chars={')'})
+        if pos >= len(s) or s[pos] != ')':
+            raise Exception("Missing closing parenthesis")
+        pos += 1  # Skip ')'
+    else:
+        # Parse consecutive literal characters until a special char is encountered.
+        start = pos
+        while pos < len(s) and s[pos] not in set("()*+|^"):
+            pos += 1
+        literal = s[start:pos]
+        node = {"type": "literal", "value": literal}
+
+    # Check for quantifiers following the atom.
+    if pos < len(s):
+        if s[pos] == '*':
+            # 0 to 5 repetitions.
+            node = {"type": "repeat", "node": node, "min": 0, "max": 5}
+            pos += 1
+        elif s[pos] == '+':
+            # 1 to 5 repetitions.
+            node = {"type": "repeat", "node": node, "min": 1, "max": 5}
+            pos += 1
+        elif s[pos] == '^':
+            # Exact repetition as specified by the number following '^'.
+            pos += 1  # Skip '^'
+            num_start = pos
+            while pos < len(s) and s[pos].isdigit():
+                pos += 1
+            if num_start == pos:
+                raise Exception("Expected number after '^'")
+            number = int(s[num_start:pos])
+            node = {"type": "repeat", "node": node, "min": number, "max": number}
+    return node, pos
+
+
+def parse_regex(s):
+    """
+    Top-level regex parser. Returns the parse tree.
+    """
+    tree, pos = parse_expression(s, 0, stop_chars=set())
+    if pos != len(s):
+        raise Exception("Unexpected characters at end of regex")
+    return tree
+
+
+def generate_from_tree(node):
+    """
+    Recursively generates all strings that match the parsed regex node.
+    """
+    t = node["type"]
+    if t == "literal":
+        return [node["value"]]
+    elif t == "sequence":
+        result = [""]
+        for elem in node["elements"]:
+            new_result = []
+            subs = generate_from_tree(elem)
+            for prefix in result:
+                for sub in subs:
+                    new_result.append(prefix + sub)
+            result = new_result
+        return result
+    elif t == "alternation":
+        results = []
+        for option in node["options"]:
+            results.extend(generate_from_tree(option))
+        return results
+    elif t == "repeat":
+        subs = generate_from_tree(node["node"])
+        results = []
+        for count in range(node["min"], node["max"] + 1):
+            if count == 0:
+                results.append("")
+            else:
+                temp = [""]
+                for _ in range(count):
+                    new_temp = []
+                    for prefix in temp:
+                        for sub in subs:
+                            new_temp.append(prefix + sub)
+                    temp = new_temp
+                results.extend(temp)
+        return results
+    else:
+        raise Exception("Unknown node type: " + t)
+
+
+def generate_valid_from_regex(regex):
+    """
+    Given a regex string, parse it into a tree and generate all valid strings.
+    """
+    tree = parse_regex(regex)
+    return generate_from_tree(tree)
+
+
+# --- Dynamic Sequence Processing (Step-by-Step Matching) --- #
+
+def process_node(node, string, pos):
+    """
+    Recursively processes the parse tree node against the given string starting at 'pos'.
+    Returns a tuple (explanation, new_pos, success), where:
+      - explanation is a list of strings detailing the processing steps,
+      - new_pos is the updated position in the string,
+      - success is a boolean indicating a successful match.
     """
     explanation = []
-    idx = 0
+    node_type = node["type"]
 
-    # Step 1: (S|T)
-    if len(string) < 1 or string[0] not in ['S', 'T']:
-        return "Does not match step 1"
-    explanation.append(f"Step 1: Matched '{string[0]}' as (S|T)")
-    idx += 1
+    if node_type == "literal":
+        literal = node["value"]
+        if string.startswith(literal, pos):
+            explanation.append(f"Matched literal '{literal}' at position {pos}")
+            return explanation, pos + len(literal), True
+        else:
+            return [f"Failed to match literal '{literal}' at position {pos}"], pos, False
 
-    # Step 2: (U|V)
-    if len(string) < 2 or string[1] not in ['U', 'V']:
-        return "Does not match step 2"
-    explanation.append(f"Step 2: Matched '{string[1]}' as (U|V)")
-    idx += 1
+    elif node_type == "sequence":
+        for i, elem in enumerate(node["elements"]):
+            exp_elem, new_pos, success = process_node(elem, string, pos)
+            explanation.extend(exp_elem)
+            if not success:
+                return explanation, new_pos, False
+            pos = new_pos
+        return explanation, pos, True
 
-    # Step 3: W*
-    w_count = 0
-    while idx < len(string) and string[idx] == 'W':
-        w_count += 1
-        idx += 1
-    explanation.append(f"Step 3: Matched 'W' repeated {w_count} times")
+    elif node_type == "alternation":
+        # Attempt each alternative.
+        alt_explanations = []
+        for option in node["options"]:
+            exp_option, new_pos, success = process_node(option, string, pos)
+            if success:
+                explanation.append(f"Matched alternation option at position {pos}")
+                explanation.extend(exp_option)
+                return explanation, new_pos, True
+            else:
+                alt_explanations.append(exp_option)
+        explanation.append(f"Failed to match any alternation option at position {pos}")
+        explanation.extend(sum(alt_explanations, []))
+        return explanation, pos, False
 
-    # Step 4: Y+
-    y_count = 0
-    while idx < len(string) and string[idx] == 'Y':
-        y_count += 1
-        idx += 1
-    if y_count < 1:
-        return "Does not match step 4"
-    explanation.append(f"Step 4: Matched 'Y' repeated {y_count} times")
+    elif node_type == "repeat":
+        count = 0
+        all_explanations = []
+        current_pos = pos
+        # Try greedy matching up to 'max' times.
+        while count < node["max"]:
+            exp_inner, new_pos, success = process_node(node["node"], string, current_pos)
+            if success and new_pos > current_pos:  # Ensure progress is made.
+                all_explanations.extend(exp_inner)
+                count += 1
+                current_pos = new_pos
+            else:
+                break
+        if count < node["min"]:
+            all_explanations.append(f"Repeat failed: expected at least {node['min']} matches but got {count} at position {pos}")
+            return all_explanations, current_pos, False
+        all_explanations.append(f"Matched repeat node {count} times from position {pos} to {current_pos}")
+        return all_explanations, current_pos, True
 
-    # Step 5: 24
-    if idx + 2 <= len(string) and string[idx:idx + 2] == '24':
-        explanation.append("Step 5: Matched '24'")
-        idx += 2
-    else: return "Does not match step 5"
+    else:
+        return [f"Unknown node type: {node_type}"], pos, False
 
-    # Final check
-    if idx == len(string):
-        explanation.append("String fully matched expression 1!")
-    else: explanation.append("String has extra chars beyond the pattern.")
 
+def dynamic_sequence_processing(regex, string):
+    """
+    Dynamically processes the given regex against the test string,
+    producing a step-by-step explanation of the matching process.
+    """
+    try:
+        tree = parse_regex(regex)
+    except Exception as e:
+        return f"Regex parsing error: {e}"
+    explanation, pos, success = process_node(tree, string, 0)
+    if not success:
+        explanation.append("Matching failed.")
+    elif pos < len(string):
+        explanation.append(f"Extra characters remain after position {pos}.")
+    else:
+        explanation.append("String fully matched the regex!")
     return "\n".join(explanation)
 
 if __name__ == "__main__":
-    p1, p2, p3 = generate_valid_strings()
+    # List of regexes for Variant 4.
+    regex_list = [
+        "(S|T)(U|V)W*Y+24",
+        "L(M|N)O^3P*Q(2|3)",
+        "R*S(T|U|V)W(X|Y|Z)^2",
+        "O(P|Q|R)+2(3|4)" # example from variant 3
+    ]
 
-    print("===== Expression 1 matches =====")
-    for s in p1[:10]: # last 10 elements
-        print(s)
-    print("Total count", len(p1))
+    for i, regex in enumerate(regex_list, start=1):
+        print(f"===== Expression {i}: {regex} =====")
+        try:
+            valid_strings = generate_valid_from_regex(regex)
+            print("First 10 strings:")
+            for s in valid_strings[:10]:
+                print(s)
+            print("Total count:", len(valid_strings))
+        except Exception as e:
+            print(f"Error generating strings for {regex}: {e}")
+        print("\n")
 
-    print("\n===== Expression 2 matches =====")
-    for s in p2[:10]:  # last 10 elements
-        print(s)
-    print("Total count", len(p2))
-
-    print("\n===== Expression 3 matches =====")
-    for s in p3[:10]:  # last 10 elements
-        print(s)
-    print("Total count", len(p3))
-
-    print("\n===== Bonus point test string =====")
-    test_string = input("Enter test string for expression 1 (ex. SUWWYY24): ")
-    print(sequence_processing(test_string))
+    print("===== Bonus: Dynamic Sequence Processing =====")
+    regex = input("Enter a regex: ")
+    test_str = input("Enter test string for dynamic processing: ")
+    result = dynamic_sequence_processing(regex, test_str)
+    print(result)
