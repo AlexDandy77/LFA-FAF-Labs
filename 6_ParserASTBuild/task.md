@@ -15,19 +15,19 @@
 1. Get familiar with parsing, what it is and how it can be programmed [1].
 2. Get familiar with the concept of AST [2].
 3. In addition to what has been done in the 3rd lab work do the following:
-   1. In case you didn't have a type that denotes the possible types of tokens you need to:
-      1. Have a type __*TokenType*__ (like an enum) that can be used in the lexical analysis to categorize the tokens. 
-      2. Please use regular expressions to identify the type of the token.
-   2. Implement the necessary data structures for an AST that could be used for the text you have processed in the 3rd lab work.
-   3. Implement a simple parser program that could extract the syntactic information from the input text.
+    1. In case you didn't have a type that denotes the possible types of tokens you need to:
+        1. Have a type __*TokenType*__ (like an enum) that can be used in the lexical analysis to categorize the tokens.
+        2. Please use regular expressions to identify the type of the token.
+    2. Implement the necessary data structures for an AST that could be used for the text you have processed in the 3rd lab work.
+    3. Implement a simple parser program that could extract the syntactic information from the input text.
 
 
 ## Evaluation:
 1. The project should be located in a __*public*__ repository on a git hosting service (preferably Github).
 
-  * You only need to have one repository.
-  * Please don't name your folders based on the lab work (e.g. Lab1, Lab2 etc.). You'll be penalized for this.
-  * Please organize your files in a logical way for easier access.
+* You only need to have one repository.
+* Please don't name your folders based on the lab work (e.g. Lab1, Lab2 etc.). You'll be penalized for this.
+* Please organize your files in a logical way for easier access.
 
 2. It should contain an explanation in the form of a Markdown with the standard structure from the ../REPORT_TEMPLATE.md file. The report needs to be put with the other reports in the corresponding folder.
 
@@ -35,7 +35,7 @@
 
 4. You need to submit on ELSE the URL to the repository. Not a huge letter/message to me telling what you did, or some .zip file or other meaningless stuff. Just the URL. And preferably a valid URL so that I won't waste time trying to find your repo on Github.
 
-5. If the work doesn't correspond to the requirements I'll revert the submission and leave some comments. If needed you can reach out and ask questions. 
+5. If the work doesn't correspond to the requirements I'll revert the submission and leave some comments. If needed you can reach out and ask questions.
 
 7. The deadline for this lab work is until 28 April, 23:59
 
